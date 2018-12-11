@@ -1,10 +1,13 @@
 #[test]
 fn answers() {
 	use super::*;
+    println!("Day 1");
     assert_eq!(day_1::part_1(), 420);
     assert_eq!(day_1::part_2(), 227);
+    println!("Day 2");
     assert_eq!(day_2::part_1(), 4712);
     assert_eq!(day_2::part_2(), "lufjygedpvfbhftxiwnaorzmq");
+    println!("Day 3");
     assert_eq!(day_3::part_1(), 117505);
     assert_eq!(day_3::part_2(), 1254);
 }
