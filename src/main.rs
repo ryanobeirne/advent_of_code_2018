@@ -1,5 +1,5 @@
-extern crate advent_of_code_2018;
-use advent_of_code_2018::input;
+extern crate advent_of_code_2018 as aoc;
+use aoc::input;
 
 mod day_1;
 mod day_2;
