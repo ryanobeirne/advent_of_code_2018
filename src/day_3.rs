@@ -1,9 +1,10 @@
 pub fn go() {
     println!("Day 3");
     part_1();
+    part_2();
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct Point {
     x: usize,
     y: usize,
@@ -20,15 +21,47 @@ impl Point{
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct Rectangle {
-    id: usize,
     origin: Point,
     size: Point,
 }
 
 impl Rectangle {
-    fn build_from_line(s: &String) -> Rectangle {
+    fn bottom_right(&self) -> Point {
+        let x = self.origin.x + self.size.x;
+        let y = self.origin.y + self.size.y;
+        Point { x, y}
+    }
+
+    fn overlaps(&self, other: &Self) -> bool {
+        let self_br = self.bottom_right();
+        let other_br = other.bottom_right();
+
+        self.origin.x < other_br.x     &&
+        self_br.x     > other.origin.x &&
+        self.origin.y < other_br.y     &&
+        self_br.y     > other.origin.y
+    }
+
+    fn contains(&self, point: &Point) -> bool {
+        let self_br = self.bottom_right();
+
+        point.x > self.origin.x &&
+        point.x <= self_br.x    &&
+        point.y > self.origin.y &&
+        point.y <= self_br.y
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+struct Claim {
+    id: usize,
+    rect: Rectangle,
+}
+
+impl Claim {
+    fn build_from_line(s: &String) -> Claim {
         let split: Vec<&str> = s.split_whitespace().collect();
 
         let id = split[0].trim_left_matches('#').parse::<usize>().unwrap_or(0);
@@ -50,47 +83,28 @@ impl Rectangle {
             y: size_xy[1],
         };
 
-        Rectangle {
-            id,
+        let rect = Rectangle {
             origin,
             size,
+        };
+
+        Claim {
+            id,
+            rect,
         }
 
     }
 
-    fn bottom_right(&self) -> Point {
-        let x = self.origin.x + self.size.x;
-        let y = self.origin.y + self.size.y;
-        Point { x, y}
-    }
-
-    #[allow(dead_code)]
-    fn overlaps(&self, other: &Self) -> bool {
-        let self_br = self.bottom_right();
-        let other_br = other.bottom_right();
-
-        self.origin.x < other_br.x     &&
-        self_br.x     > other.origin.x &&
-        self.origin.y < other_br.y     &&
-        self_br.y     > other.origin.y
-    }
-
-    fn contains(&self, point: &Point) -> bool {
-        let self_br = self.bottom_right();
-
-        point.x > self.origin.x &&
-        point.x <= self_br.x    &&
-        point.y > self.origin.y &&
-        point.y <= self_br.y
+    fn claim_collect(lines: Vec<String>) -> Vec<Self> {
+        lines.iter()
+            .map(|s| Claim::build_from_line(s))
+            .collect()
     }
 }
 
 fn part_1() {
     let lines = super::input::read(3);
-
-    let rec_vec: Vec<Rectangle> = lines.iter()
-        .map(|s| Rectangle::build_from_line(s))
-        .collect();
+    let claims = Claim::claim_collect(lines);
 
     let mut gt2_count = 0;
 
@@ -101,7 +115,7 @@ fn part_1() {
             let mut overlap_count = 0;
             let point = &Point { x, y };
 
-            for rect in &rec_vec {
+            for rect in claims.iter().map(|c| c.rect.clone()).collect::<Vec<Rectangle>>() {
                 if rect.contains(point) {
                     overlap_count += 1;
                     if overlap_count == 2 { continue }
@@ -116,4 +130,15 @@ fn part_1() {
     }
 
     println!("\tPart 1: {}", gt2_count);
+}
+
+fn part_2() {
+    let lines = super::input::read(3);
+    let claims = Claim::claim_collect(lines);
+
+    let lonely_vec: Vec<Claim> = Vec::new();
+
+    for claim in claims.iter().enumerate() {
+
+    }
 }
