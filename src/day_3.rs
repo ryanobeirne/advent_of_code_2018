@@ -130,7 +130,7 @@ pub fn part_1() -> u32 {
 
     let mut gt2_count = 0;
 
-    let arr_xy = [[0; 1000]; 1000];
+    let arr_xy = vec![[0; 1000]; 1000];
 
     for (x, row) in arr_xy.iter().enumerate() {
         for (y, _) in row.iter().enumerate() {

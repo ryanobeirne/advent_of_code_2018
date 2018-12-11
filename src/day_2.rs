@@ -1,4 +1,5 @@
 pub fn go() {
+    println!("Day 2");
     part_1();
     part_2();
 }
@@ -7,9 +8,7 @@ fn characterize(s: &String) -> Vec<char> {
     s.chars().collect()
 }
 
-fn part_1() {
-    println!("Day 2");
-
+pub fn part_1() -> usize {
     let lines = super::input::read(2);
 
     let mut count_2: usize = 0;
@@ -52,11 +51,11 @@ fn part_1() {
     let checksum = count_2 * count_3;
 
     println!("\tPart 1: {}", checksum);
+
+    checksum
 }
 
-fn part_2() {
-    use std::fmt::Write;
-
+pub fn part_2() -> String {
     let lines = super::input::read(2);
     let mut diff_vec: Vec<&String> = Vec::new();
 
@@ -86,9 +85,11 @@ fn part_2() {
 
     for (i, c) in char_vec1.iter().enumerate() {
         if c == &char_vec2[i] {
-            write!(&mut s, "{}", c);
+            s.push(*c);
         }
     }
 
     println!("\tPart 2: {}", s);
+
+    s
 }

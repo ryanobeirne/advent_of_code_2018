@@ -1,4 +1,5 @@
 pub fn go() {
+    println!("Day 1");
     part_1();
     part_2();
 }
@@ -9,17 +10,15 @@ fn line_vec() -> Vec<isize> {
     vec_isize
 }
 
-fn part_1() {
-    println!("Day 1");
-
+pub fn part_1() -> isize {
     let vec_isize = line_vec();
-
     let sum: isize = vec_isize.iter().sum();
-
     println!("\tPart 1: {}", sum);
+
+    sum
 }
 
-pub fn part_2() {
+pub fn part_2() -> isize {
     let vec_isize = line_vec();
 
     let mut new_vec: Vec<isize> = Vec::new();
@@ -35,4 +34,6 @@ pub fn part_2() {
             val += i;
         }
     }
+
+    val
 }
