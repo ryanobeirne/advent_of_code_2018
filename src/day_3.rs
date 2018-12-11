@@ -49,7 +49,7 @@ impl Rectangle {
         let a = self.bounds();
         let b = other.bounds();
 
-        if a == b { println!("SAMESIES!:\n{:?}\n{:?}\n", self, other); return true; }
+        if a == b { return true; }
 
         if a.top  <= b.bottom || b.top  <= a.bottom { return false; }
         if a.left >= b.right  || b.left >= a.right  { return false; }
@@ -124,7 +124,7 @@ impl Claim {
     }
 }
 
-pub fn part_1() {
+pub fn part_1() -> u32 {
     let lines = super::input::read(3);
     let claims = Claim::claim_collect(lines);
 
@@ -152,9 +152,11 @@ pub fn part_1() {
     }
 
     println!("\tPart 1: {}", gt2_count);
+
+    gt2_count
 }
 
-pub fn part_2() {
+pub fn part_2() -> usize {
     let lines = super::input::read(3);
     let claims = Claim::claim_collect(lines);
 
@@ -179,6 +181,8 @@ pub fn part_2() {
     assert!(lonely_vec.len() == 1);
 
     for claim in &lonely_vec {
-        println!("\tPart 2: {}", claim.id);
+        println!("\tPart 2: {}", &claim.id);
     }
+
+    lonely_vec[0].id
 }
