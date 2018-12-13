@@ -2,7 +2,7 @@
 extern crate nom;
 
 extern crate chrono;
-pub use chrono::{NaiveDateTime, NaiveTime, Duration};
+pub use chrono::{NaiveDateTime, NaiveTime, Duration, Timelike};
 
 pub mod input;
 pub mod tests;

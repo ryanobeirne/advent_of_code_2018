@@ -10,6 +10,9 @@ fn answers() {
     println!("Day 3");
     assert_eq!(day_3::part_1(), 117505);
     assert_eq!(day_3::part_2(), 1254);
+    println!("Day 4");
+    assert_eq!(day_4::part_1(), 125444);
+
 }
 
 #[test]

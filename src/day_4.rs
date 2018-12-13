@@ -105,7 +105,7 @@ impl GuardDuty {
         GuardDuty(log.0.iter().map(|l| l.to_shift()).collect())
     }
 
-    pub fn sleepiest(&self) -> usize {
+    pub fn sleepiest_guard(&self) -> usize {
         let mut guard_hash: BTreeMap<usize, i64> = BTreeMap::new();
 
         for shift in &self.0 {
@@ -125,9 +125,46 @@ impl GuardDuty {
             }
         }
 
-        println!("Sleepiest Guard #{}: {} minutes", biggest.0, biggest.1);
+        // println!("Sleepiest Guard #{}: {} minutes", biggest.0, biggest.1);
+        biggest.0
+    }
+
+    pub fn sleepiest_minute(&self) -> u32 {
+        let mut stack: BTreeMap<u32, usize> = BTreeMap::new();
+
+        for shift in &self.0 {
+            for nap in &shift.naps {
+                let start = nap.start.minute();
+                let end = nap.end.minute();
+                for minute in 0..60 {
+                    if minute >= start && minute < end {
+                        let count = stack.get(&minute).unwrap_or(&0).clone();
+                        stack.insert(minute, count + 1);
+                    }
+                }
+            }
+        }
+
+        let mut biggest = (0_u32, 0_usize);
+        for (minute, count) in &stack {
+            if *count > biggest.1 {
+                biggest = (*minute, *count);
+            }
+        }
 
         biggest.0
+    }
+
+    pub fn by_guard(&self, guard: usize) -> Self {
+        let mut guard_duty = GuardDuty(Vec::new());
+
+        for shift in &self.0 {
+            if shift.guard == guard {
+                guard_duty.0.push(shift.clone());
+            }
+        }
+
+        guard_duty
     }
 }
 
@@ -161,12 +198,35 @@ impl Nap {
         let duration = self.end - self.start;
         duration.num_minutes()
     }
+
+    pub fn print_timeline(&self) {
+        let mut timeline = String::new();
+
+        for minute in 0..60 {
+            if minute >= self.start.minute() && minute < self.end.minute(){
+                timeline.push('#');
+            } else {
+                timeline.push('.');
+            }
+        }
+
+        println!("{}", timeline);
+    }
 }
 
-pub fn part_1() {
+pub fn part_1() -> u32 {
     let mut lines = super::input::read(4);
     lines.sort();
 
-    let sleepy_guard = GuardDuty::from_log().sleepiest();
+    let guard_duty = GuardDuty::from_log();
+    let sleepy_guard = guard_duty.sleepiest_guard();
 
+    let sleepy_guard_duty = guard_duty.by_guard(sleepy_guard);
+    let sleepy_minute = sleepy_guard_duty.sleepiest_minute();
+
+    let answer = sleepy_guard as u32 * sleepy_minute;
+
+    println!("\tPart 1: {}", answer);
+
+    answer    
 }
