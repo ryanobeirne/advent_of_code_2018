@@ -4,6 +4,7 @@ use std::collections::BTreeMap;
 pub fn go() {
     println!("Day 4");
     part_1();
+    part_2();
 }
 
 const DATE_FMT: &str = "%Y-%m-%d %H:%M";
@@ -42,14 +43,6 @@ impl ShiftLog {
                 naps.push(Nap { start, end });
             }
         }
-
-        // println!("GUARD:\t{}", guard);
-        // println!("START:\t{}", start);
-        // for nap in &naps {
-        //     println!("NAP:\t{:?}", nap);
-        //     println!("\tDURATION:\t{} min", nap.duration());
-        // }
-        // println!("END:\t{}\n", end);
 
         Shift {
             guard, start, end, naps
@@ -152,6 +145,31 @@ impl GuardDuty {
             }
         }
 
+        // println!("Sleepiest Minute: {}", biggest.0);
+        biggest.0
+    }
+
+    pub fn guard_most_asleep_on_minute(&self, minute: u32) -> usize {
+        let mut guards: BTreeMap<usize, usize> = BTreeMap::new();
+
+        for shift in &self.0 {
+            for nap in &shift.naps {
+                if nap.contains_minute(minute) {
+                    let count = guards.get(&shift.guard).unwrap_or(&0_usize) + 1;
+                    guards.insert(shift.guard, count);
+                }
+            }
+        }
+
+        let mut biggest: (usize, usize) = (0, 0);
+        for (guard, count) in guards {
+            if count > biggest.1 {
+                biggest = (guard, count);
+            }
+        }
+
+        // println!("GUARD #{}: {}", biggest.0, biggest.1);
+        
         biggest.0
     }
 
@@ -165,6 +183,23 @@ impl GuardDuty {
         }
 
         guard_duty
+    }
+
+    pub fn guard_map_minutes(&self) -> BTreeMap<usize, Vec<u32>> {
+        let mut guard_map: BTreeMap<usize, Vec<u32>> = BTreeMap::new();
+        let dummy: Vec<u32> = Vec::new();
+
+        for shift in &self.0 {
+            let mut minute_vec = guard_map.get(&shift.guard).unwrap_or(&dummy).clone();
+            for nap in &shift.naps {
+                for minute in &nap.minutes(){
+                    minute_vec.push(*minute);
+                }
+            }
+            guard_map.insert(shift.guard, minute_vec);
+        }
+
+        guard_map
     }
 }
 
@@ -199,6 +234,22 @@ impl Nap {
         duration.num_minutes()
     }
 
+    pub fn minutes(&self) -> Vec<u32> {
+        let mut minutes: Vec<u32> = Vec::new();        
+
+        for m in 0..60 {
+            if self.contains_minute(m) {
+                minutes.push(m);
+            }
+        }
+
+        minutes
+    }
+
+    pub fn contains_minute(&self, minute: u32) -> bool {
+        minute >= self.start.minute() && minute < self.end.minute()
+    }
+
     pub fn print_timeline(&self) {
         let mut timeline = String::new();
 
@@ -214,19 +265,59 @@ impl Nap {
     }
 }
 
-pub fn part_1() -> u32 {
-    let mut lines = super::input::read(4);
-    lines.sort();
+fn mode_minute(nums: Vec<u32>) -> (u32, usize) {
+    let mut minute_count: BTreeMap<u32, usize> = BTreeMap::new();
 
+    for minute in nums {
+        if minute_count.contains_key(&minute) {
+            let count = minute_count.get(&minute).unwrap() + 1;
+            minute_count.insert(minute, count);
+        } else {
+            minute_count.insert(minute, 1);
+        }
+    }
+
+    let mut most = (0, 0);
+    for (minute, count) in minute_count {
+        if count > most.1 {
+            most = (minute, count);
+        }
+    }
+
+    most
+}
+
+pub fn part_1() -> usize {
     let guard_duty = GuardDuty::from_log();
     let sleepy_guard = guard_duty.sleepiest_guard();
 
     let sleepy_guard_duty = guard_duty.by_guard(sleepy_guard);
     let sleepy_minute = sleepy_guard_duty.sleepiest_minute();
 
-    let answer = sleepy_guard as u32 * sleepy_minute;
-
+    let answer = sleepy_guard * sleepy_minute as usize;
     println!("\tPart 1: {}", answer);
-
     answer    
+}
+
+pub fn part_2() -> usize {
+    let guard_duty = GuardDuty::from_log();
+    let guard_map = guard_duty.guard_map_minutes();
+
+    let mut guard_minute: Vec<(usize, (u32, usize))> = Vec::new();
+    for (guard, minutes) in &guard_map {
+        guard_minute.push( (*guard, mode_minute(minutes.clone())) );
+    }
+
+    let mut most = (0, (0, 0));
+    for (guard, (minute, count)) in guard_minute {
+        if count > (most.1).1 {
+            most = (guard, (minute, count));
+        }
+    }
+
+    let (guard, (minute, _)) = most;
+
+    let answer = guard * minute as usize;
+    println!("\tPart 2: {}", answer);
+    answer
 }
