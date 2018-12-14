@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn go() {
     println!("Day 3");
     part_1();
@@ -125,7 +127,7 @@ impl Claim {
 }
 
 pub fn part_1() -> u32 {
-    let lines = super::input::read(3);
+    let lines = input::read_to_lines(input::reader(3));
     let claims = Claim::claim_collect(lines);
 
     let mut gt2_count = 0;
@@ -157,7 +159,7 @@ pub fn part_1() -> u32 {
 }
 
 pub fn part_2() -> usize {
-    let lines = super::input::read(3);
+    let lines = input::read_to_lines(input::reader(3));
     let claims = Claim::claim_collect(lines);
 
     let mut lonely_vec: Vec<Claim> = Vec::new();

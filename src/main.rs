@@ -6,4 +6,5 @@ fn main() {
     day_2::go();
     day_3::go();
     day_4::go();
+    day_5::go();
 }

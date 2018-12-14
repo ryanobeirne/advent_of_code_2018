@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn go() {
     println!("Day 2");
     part_1();
@@ -9,7 +11,7 @@ fn characterize(s: &String) -> Vec<char> {
 }
 
 pub fn part_1() -> usize {
-    let lines = super::input::read(2);
+    let lines = input::read_to_lines(input::reader(2));
 
     let mut count_2: usize = 0;
     let mut count_3: usize = 0;
@@ -56,7 +58,7 @@ pub fn part_1() -> usize {
 }
 
 pub fn part_2() -> String {
-    let lines = super::input::read(2);
+    let lines = input::read_to_lines(input::reader(2));
     let mut diff_vec: Vec<&String> = Vec::new();
 
     for id in lines.iter() {

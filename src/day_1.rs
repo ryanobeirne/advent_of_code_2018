@@ -1,3 +1,5 @@
+use super::*;
+
 pub fn go() {
     println!("Day 1");
     part_1();
@@ -5,7 +7,7 @@ pub fn go() {
 }
 
 fn line_vec() -> Vec<isize> {
-    let lines = super::input::read(1);
+    let lines = input::read_to_lines(input::reader(1));
     let vec_isize: Vec<isize> = lines.iter().map(|line| line.parse().unwrap()).collect();
     vec_isize
 }

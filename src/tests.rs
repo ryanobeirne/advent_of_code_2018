@@ -13,6 +13,8 @@ fn answers() {
     println!("Day 4");
     assert_eq!(day_4::part_1(), 125444);
     assert_eq!(day_4::part_2(), 18325);
+    println!("Day 5");
+    assert_eq!(day_5::part_1(), 11298);
 
 }
 
@@ -55,4 +57,11 @@ fn overlapper() {
     assert!(! &claims[4].rect.overlaps(&claims[2].rect) );
     assert!(! &claims[4].rect.overlaps(&claims[0].rect) );
     assert!(  &claims[5].rect.overlaps(&claims[0].rect) );
+}
+
+#[test]
+fn stringer() {
+	use super::*;
+    let string = input::read_to_string(5);
+    println!("{}", string);
 }

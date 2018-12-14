@@ -66,7 +66,7 @@ fn parse_btw_brackets(line: &String) -> String {
 impl Log {
     pub fn build() -> Self {
         let mut log = Log(Vec::new());
-        let mut lines = input::read(4);
+        let mut lines = input::read_to_lines(input::reader(4));
         lines.sort();
 
         named!(in_brackets, delimited!(char!('['), is_not!("]"), char!(']')));
