@@ -15,6 +15,7 @@ fn answers() {
     assert_eq!(day_4::part_2(), 18325);
     println!("Day 5");
     assert_eq!(day_5::part_1(), 11298);
+    assert_eq!(day_5::part_2(), 5148);
 
 }
 
