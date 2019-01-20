@@ -52,10 +52,20 @@ pub fn part1(lines: &Vec<String>) -> usize {
 fn diff_count(s1: &str, s2: &str) -> usize {
     let btree1 = BTreeMap::from_iter(s1.char_indices());
     let btree2 = BTreeMap::from_iter(s2.char_indices());
+
+    let longest;
+    let other;
+    if btree1.len() >= btree2.len() {
+        longest = &btree1;
+        other = &btree2;
+    } else {
+        longest = &btree2;
+        other = &btree1;
+    }
     
-    btree1.into_iter()
+    longest.iter()
         .filter(|(i, c)|
-            c != btree2.get(i).expect("&str's have different lengths")
+            *c != other.get(i).unwrap_or(&' ')
         ).count()
 }
 
@@ -63,7 +73,9 @@ fn diff_count(s1: &str, s2: &str) -> usize {
 fn diff() {
     let s1 = "abcde";
     let s2 = "axcye";
+    let s3 = "abcdef";
     assert_eq!(diff_count(s1, s2), 2);
+    assert_eq!(diff_count(s1, s3), 1);
 }
 
 pub fn part2(lines: &Vec<String>) -> String {
@@ -85,7 +97,7 @@ fn common_chars(s1: &str, s2: &str) -> String {
     let btree2 = BTreeMap::from_iter(s2.char_indices());
 
     btree1.into_iter()
-        .filter(|(i, c)| c == btree2.get(i).expect("&str's have diffrent lengths!"))
+        .filter(|(i, c)| c == btree2.get(i).unwrap_or(&' '))
         .map(|(_, c)| c)
         .collect()
 }
@@ -94,5 +106,7 @@ fn common_chars(s1: &str, s2: &str) -> String {
 fn common() {
     let s1 = "abcde";
     let s2 = "axcye";
+    let s3 = "abcdef";
     assert_eq!(common_chars(s1, s2), "ace");
+    assert_eq!(common_chars(s1, s3), "abcde");
 }
