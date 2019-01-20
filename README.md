@@ -2,8 +2,16 @@
 
 ## <https://www.adventofcode.com>
 
-To see my answers, clone this repository, then run this from the repository directory:
+I did Advent of Code this year while learning Rust. Each day is it's own crate. Most of the crates read puzzle input from stdin. To try it out:
 
 ```sh
-cargo test --lib --release -- --nocapture answers
+cd day01
+cargo run --release < input/input.txt
+```
+
+Some crates read puzzle input as arguments:
+
+```sh
+cd day11
+cargo run --release -- 7347
 ```
