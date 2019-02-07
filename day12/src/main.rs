@@ -9,20 +9,30 @@ fn main() -> Result<()> {
     let mut input = String::new();
     stdin().read_to_string(&mut input)?;
 
-    let mut state = State::from_input(&input)?;
-    let ruleset = Rule::rules_from_intput(&input)?;
+    let state = State::from_input(&input)?;
+    let rules = Rule::rules_from_input(&input)?;
 
-    state.advance_times(20, &ruleset);
+    let part1 = part_1(&mut state.clone(), &rules, 20);
+    println!("Part 1: {}", part1);
 
-    let sum: i32 = state.pots.iter()
-        .filter(|(_index, pot)| pot.0.is_some())
-        .map(|(index, _pot)| index)
-        .sum();
-
-    println!("{}", state);
-    println!("Sum: {}", sum);
+    let part2 = part_1(&mut state.clone(), &rules, 50_000_000_000);
+    println!("Part 2: {}", part2);
 
     Ok(())
+}
+
+fn part_1(state: &mut State, rules: &Rules, generations: usize) -> i32 {
+    for gen in 0..generations {
+        if gen % 1000 == 0 && gen != 0 {
+            println!(
+                "{} Generations\tMin: {}\tMax: {}\tSum: {}",
+                gen, state.min(), state.max(), state.sum()
+            );
+        }
+        state.advance(rules);
+    }
+
+    state.sum()
 }
  
 #[derive(Debug, Clone, PartialOrd, Ord, Eq, PartialEq)]
@@ -31,6 +41,7 @@ struct Plant;
 #[derive(Debug, Clone, PartialOrd, Ord, Eq, PartialEq)]
 struct Pot(Option<Plant>);
 
+#[derive(Clone)]
 struct State {
     pots: BTreeMap<i32, Pot>,
 }
@@ -45,12 +56,6 @@ impl State {
             Ok(State::from_str( line.trim_start_matches("initial state: "))?)
         } else {
             Err(io::Error::from(io::ErrorKind::InvalidInput))
-        }
-    }
-
-    fn advance_times(&mut self, generations: usize, rules: &Rules) {
-        for _gen in 0..generations {
-            self.advance(rules);
         }
     }
 
@@ -116,6 +121,13 @@ impl State {
         [config[1].0.clone(), config[2].0.clone()]
     }
 
+    fn sum(&self) -> i32 {
+        self.pots.iter()
+            .filter(|(_index, pot)| pot.0.is_some())
+            .map(|(index, _pot)| index)
+            .sum()
+    }
+
     fn max(&self) -> i32 {
         *self.pots.keys().max().expect("State is empty!")
     }
@@ -167,7 +179,7 @@ struct Rule {
 type Rules = BTreeMap<Config, Pot>;
 
 impl Rule {
-    fn rules_from_intput(input: &str) -> Result<Rules> {
+    fn rules_from_input(input: &str) -> Result<Rules> {
         let mut ruleset = Rules::new();
         let lines = input.lines().skip(2).collect::<Vec<&str>>();
 
