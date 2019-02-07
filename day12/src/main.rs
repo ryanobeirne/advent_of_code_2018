@@ -23,12 +23,17 @@ fn main() -> Result<()> {
 
 fn part_1(state: &mut State, rules: &Rules, generations: usize) -> i32 {
     for gen in 0..generations {
+        if gen == 1000 {
+            println!("Part 2: There's a pattern here...");
+        }
+
         if gen % 1000 == 0 && gen != 0 {
             println!(
-                "{} Generations\tMin: {}\tMax: {}\tSum: {}",
+                "{} Generations: Min: {}\tMax: {}\tSum: {}",
                 gen, state.min(), state.max(), state.sum()
             );
         }
+
         state.advance(rules);
     }
 
