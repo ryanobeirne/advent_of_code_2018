@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 use std::io::{self, Read, stdin};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 macro_rules! inputerr {
     () => {
@@ -22,16 +22,37 @@ fn main() -> Result<()> {
     let mut input = String::new();
     stdin().read_to_string(&mut input)?;
 
-    let mut map = Map::from_input(&input);
+    let mut map = Map::from_input(&input)?;
+    println!("{}", map);
 
     Ok(())
 }
 
-struct Map(HashMap<Position, Option<Cart>>);
+struct Map(BTreeMap<Location, Position>);
 
 impl Map {
     fn new() -> Map {
-        Map(HashMap::new())
+        Map(BTreeMap::new())
+    }
+
+    fn width(&self) -> u8 {
+        self.0.keys()
+            .map(|loc| loc.x)
+            .max().expect("Empty map!")
+        -
+        self.0.keys()
+            .map(|loc| loc.x)
+            .min().expect("Empty map!")
+    }
+
+    fn height(&self) -> u8 {
+        self.0.keys()
+            .map(|loc| loc.y)
+            .max().expect("Empty map!")
+        -
+        self.0.keys()
+            .map(|loc| loc.y)
+            .min().expect("Empty map!")
     }
 
     fn from_input(input: &str) -> Result<Map> {
@@ -42,8 +63,8 @@ impl Map {
                 let location = Location{x: x as u8, y: y as u8};
                 let feature = Feature::from_str(&character.to_string())?;
                 let cart = Cart::new_from_char(character);
-                let position = Position { location, feature };
-                map.0.insert(position, cart);
+                let position = Position { feature, cart };
+                map.0.insert(location, position);
             }
         }
 
@@ -51,13 +72,13 @@ impl Map {
     }
 }
 
-#[derive(Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 struct Cart {
     heading: Heading,
     next_turn: Turn,
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Heading {
     North,
     South,
@@ -65,26 +86,26 @@ enum Heading {
     West,
 }
 
-#[derive(Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum Turn {
     Left,
     Straight,
     Right,
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 struct Location {
-    x: u8,
     y: u8,
+    x: u8,
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 struct Position {
-    location: Location,
     feature: Feature,
+    cart: Option<Cart>,
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum Feature {
     Track(Orientation),
     Intersection, // +
@@ -92,13 +113,13 @@ enum Feature {
     Empty,
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum Orientation {
     Horizontal, // -
     Vertical,   // |
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 enum Rotation {
     Clockwise,        // `/`
     CounterClockwise, // `\`
@@ -164,5 +185,59 @@ impl FromStr for Feature {
             " "  => Ok(Empty),
             _ => inputerr!(),
         }
+    }
+}
+
+impl fmt::Display for Map {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            self.0.iter()
+                .map(|(loc, pos)| {
+                    if loc.x == self.width() {
+                        format!("{}\n", pos)
+                    } else {
+                        pos.to_string()
+                    }
+                }).collect::<String>()
+        )
+    }
+}
+
+impl fmt::Display for Feature {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match self {
+                Track(Horizontal)       => '-',
+                Track(Vertical)         => '|',
+                Intersection            => '+',
+                Curve(Clockwise)        => '/',
+                Curve(CounterClockwise) => '\\',
+                Empty                   => ' ',
+            }
+        )
+    }
+}
+
+impl fmt::Display for Cart {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match self.heading {
+                North => '^',
+                South => 'v',
+                East  => '>',
+                West  => '<',
+            }
+        )
+    }
+}
+
+impl fmt::Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}",
+            match &self.cart {
+                Some(cart) => cart.to_string(),
+                None => self.feature.to_string(),
+            }
+        )
     }
 }
