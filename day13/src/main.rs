@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 use std::io::{self, Read, stdin};
-use std::collections::{btree_map::Entry, BTreeMap};
+use std::collections::BTreeMap;
 
 macro_rules! inputerr {
     () => {
@@ -22,20 +22,23 @@ fn main() -> Result<()> {
     let mut input = String::new();
     stdin().read_to_string(&mut input)?;
 
-    let mut map = Map::from_input(&input)?;
+    let map = Map::from_input(&input)?;
 
-    let location = loop {
-        // println!("{}\n", &map);
-        if let Some(loc) = map.tick() {
-            break loc;
-        }
-    };
-
-    println!("Part 1: {},{}", location.x, location.y);
+    let part_1 = part1(&mut map.clone());
+    println!("Part 1: {},{}", part_1.x, part_1.y);
 
     Ok(())
 }
 
+fn part1(map: &mut Map) -> Location {
+    loop {
+        if let Some(loc) = map.tick() {
+            break loc;
+        }
+    }
+}
+
+#[derive(Clone)]
 struct Map(BTreeMap<Location, Position>);
 
 impl Map {
