@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::error::Error;
 use std::fmt;
 use std::io::{self, Read, stdin};
-use std::collections::BTreeMap;
+use std::collections::{btree_map::Entry, BTreeMap};
 
 macro_rules! inputerr {
     () => {
@@ -23,7 +23,15 @@ fn main() -> Result<()> {
     stdin().read_to_string(&mut input)?;
 
     let mut map = Map::from_input(&input)?;
-    println!("{}", map);
+
+    let location = loop {
+        // println!("{}\n", &map);
+        if let Some(loc) = map.tick() {
+            break loc;
+        }
+    };
+
+    println!("Part 1: {},{}", location.x, location.y);
 
     Ok(())
 }
@@ -33,6 +41,48 @@ struct Map(BTreeMap<Location, Position>);
 impl Map {
     fn new() -> Map {
         Map(BTreeMap::new())
+    }
+
+    fn tick(&mut self) -> Option<Location> {
+        let mut carts = Vec::<(Location, Option<Cart>, Feature)>::new();
+
+        for (loc, pos) in self.0.iter_mut() {
+            if let Some(_cart) = pos.cart {
+                let (new_loc, new_cart) = loc.move_cart(pos);
+                carts.push((new_loc, new_cart, pos.feature));
+                pos.cart = None;
+            }
+        }
+
+        let collision = Map::collision_check(&carts);
+        if collision.is_some() {
+            return collision
+        }
+
+        for (loc, cart, _feature) in carts.iter() {
+            let mut position = self.0.get(&loc).expect("Location is not in map!").clone();
+            position.cart = *cart;
+
+            self.0.insert(*loc, position);
+        }
+        
+        None
+    }
+
+    fn collision_check(carts: &Vec<(Location, Option<Cart>, Feature)>) -> Option<Location> {
+        let mut counter = BTreeMap::<Location, usize>::new();
+
+        for (loc, _cart, _feature) in carts {
+            *counter.entry(*loc).or_insert(0) += 1;
+        }
+
+        for (loc, count) in counter.iter() {
+            if *count > 1 {
+                return Some(*loc);
+            }
+        }
+
+        None
     }
 
     fn width(&self) -> u8 {
@@ -45,6 +95,7 @@ impl Map {
             .min().expect("Empty map!")
     }
 
+    #[allow(dead_code)]
     fn height(&self) -> u8 {
         self.0.keys()
             .map(|loc| loc.y)
@@ -72,13 +123,13 @@ impl Map {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Cart {
     heading: Heading,
     next_turn: Turn,
 }
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 enum Heading {
     North,
     South,
@@ -86,26 +137,35 @@ enum Heading {
     West,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Turn {
     Left,
     Straight,
     Right,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Location {
     y: u8,
     x: u8,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 struct Position {
     feature: Feature,
     cart: Option<Cart>,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+impl Default for Position {
+    fn default() -> Position {
+        Position {
+            feature: Track(Horizontal),
+            cart: None,
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Feature {
     Track(Orientation),
     Intersection, // +
@@ -113,16 +173,72 @@ enum Feature {
     Empty,
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Orientation {
     Horizontal, // -
     Vertical,   // |
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 enum Rotation {
     Clockwise,        // `/`
     CounterClockwise, // `\`
+}
+
+impl Location {
+    fn move_cart(self, pos: &mut Position) -> (Location, Option<Cart>) {
+        if let Some(mut cart) = pos.cart {
+
+            match pos.feature {
+                Track(_) => (),
+                Intersection => cart.turn(),
+                Curve(dir) => cart.curve(dir),
+                Empty => panic!("Cart has come off the tracks!"),
+            }
+
+            (self.move_by_heading(cart.heading), Some(cart))
+        } else {
+            (self, pos.cart)
+        }
+        
+    }
+
+    fn move_by_heading(&self, heading: Heading) -> Location {
+        match heading {
+            North => self.move_north(),
+            South => self.move_south(),
+            East  => self.move_east(),
+            West  => self.move_west(),
+        }
+    }
+
+    fn move_east(&self) -> Location {
+        Location {
+            x: self.x + 1,
+            y: self.y,
+        }
+    }
+
+    fn move_west(&self) -> Location {
+        Location {
+            x: self.x - 1,
+            y: self.y,
+        }
+    }
+
+    fn move_north(&self) -> Location {
+        Location {
+            x: self.x,
+            y: self.y - 1,
+        }
+    }
+
+    fn move_south(&self) -> Location {
+        Location {
+            x: self.x,
+            y: self.y + 1,
+        }
+    }
 }
 
 impl Cart {
@@ -149,6 +265,10 @@ impl Cart {
         self.heading = self.heading.turn(&self.next_turn);
         self.next_turn = self.next_turn.next();
     }
+
+    fn curve(&mut self, dir: Rotation) {
+        self.heading = self.heading.curve(dir);
+    }
 }
 
 impl Heading {
@@ -159,6 +279,15 @@ impl Heading {
             (East,  Right) | (West,  Left) => South,
             (South, Right) | (North, Left) => West,
             (West,  Right) | (East,  Left) => North,
+        }
+    }
+
+    fn curve(&self, rotation: Rotation) -> Heading {
+        match (self, rotation) {
+            (North, Clockwise) | (South, CounterClockwise) => East,
+            (North, CounterClockwise) | (South, Clockwise) => West,
+            (East, Clockwise) | (West, CounterClockwise)   => North,
+            (East, CounterClockwise) | (West, Clockwise)   => South,
         }
     }
 }
@@ -193,7 +322,7 @@ impl fmt::Display for Map {
         write!(f, "{}",
             self.0.iter()
                 .map(|(loc, pos)| {
-                    if loc.x == self.width() {
+                    if loc.x >= self.width() {
                         format!("{}\n", pos)
                     } else {
                         pos.to_string()
