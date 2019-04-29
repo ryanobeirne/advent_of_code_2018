@@ -2,16 +2,14 @@
 
 ## <https://www.adventofcode.com>
 
-I did Advent of Code this year while learning Rust. Each day is it's own crate. Most of the crates read puzzle input from stdin. To try it out:
+I did Advent of Code this year while learning Rust. Each day is it's own bin. Most of the crates read puzzle input from stdin. To try it out:
 
 ```sh
-cd day01
-cargo run --release < input/input.txt
+cargo run --release --bin=day01 < input/day01.txt
 ```
 
-Some crates read puzzle input as arguments:
+Some bins read puzzle input as arguments:
 
 ```sh
-cd day11
-cargo run --release -- 7347
+cargo run --release --bin=day11 -- 7347
 ```
