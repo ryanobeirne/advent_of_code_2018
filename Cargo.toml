@@ -66,9 +66,9 @@ path = "bin/day13.rs"
 #name = "day14"
 #path = "bin/day14.rs"
 
-#[[bin]]
-#name = "day15"
-#path = "bin/day15.rs"
+[[bin]]
+name = "day15"
+path = "bin/day15.rs"
 
 #[[bin]]
 #name = "day16"
