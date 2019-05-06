@@ -89,7 +89,7 @@ impl CreatureType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 struct Area<'a> {
     point: &'a Point, // The middle point
     tl: Point,    // Top Left
@@ -174,8 +174,8 @@ impl fmt::Display for Feature {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
 struct Point {
-    y: u8,
-    x: u8,
+    y: i8,
+    x: i8,
 }
 
 impl Point {
@@ -212,6 +212,27 @@ impl Point {
     }
 }
 
+#[test]
+fn area_from_point() {
+    let point = Point { x: 1, y: 1 };
+    let area_expected = Area {
+        point: &point,
+        tl: Point { x: 0, y: 0 },
+        tm: Point { x: 1, y: 0 },
+        tr: Point { x: 2, y: 0 },
+        ml: Point { x: 0, y: 1 },
+        mr: Point { x: 2, y: 1 },
+        bl: Point { x: 0, y: 2 },
+        bm: Point { x: 1, y: 2 },
+        br: Point { x: 2, y: 2 },
+    };
+    let area_from = Area::from(&point);
+
+    assert_eq!(area_expected, area_from);
+
+    Area::from(&Point { x: 0, y: 0} );
+}
+
 impl Default for Map {
     fn default() -> Map {
         Map { 
@@ -222,7 +243,7 @@ impl Default for Map {
 }
 
 impl Map {
-    fn width(&self) -> u8 {
+    fn width(&self) -> i8 {
         self.layout.keys()
             .map(|p| p.x)
             .max_by(|a, b| a.cmp(b))
@@ -240,7 +261,7 @@ impl FromStr for Map {
 
         for (y, line) in s.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
-                let point = Point { x: x as u8, y: y as u8 };
+                let point = Point { x: x as i8, y: y as i8 };
                 let feature = match c {
                     'E' => Some(Unit(Creature {team: Elf, damage: 0, loc: point})),
                     'G' => Some(Unit(Creature {team: Goblin, damage: 0, loc: point})),
