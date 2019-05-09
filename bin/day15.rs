@@ -91,29 +91,20 @@ impl CreatureType {
 
 #[derive(Debug, PartialEq, Eq)]
 struct Area<'a> {
-    point: &'a Point, // The middle point
-    tl: Point,    // Top Left
-    tm: Point,    // Top Middle
-    tr: Point,    // Top Right
-    ml: Point,    // Top Left
-    mr: Point,    // Top Right
-    bl: Point,    // Top Left
-    bm: Point,    // Top Middle
-    br: Point,    // Top Right
+    center: &'a Point,  // The middle point
+    around: [Point; 8], // The surrounding 8 points
 }
 
 impl<'a> From<&'a Point> for Area<'a> {
-    fn from(point: &'a Point) -> Area<'a> {
-        let tl = point.top_left();
-        let tm = point.top_middle();
-        let tr = point.top_right();
-        let ml = point.mid_left();
-        let mr = point.mid_right();
-        let bl = point.bot_left();
-        let bm = point.bot_middle();
-        let br = point.bot_right();
-
-        Area { point, tl, tm, tr, ml, mr, bl, bm, br }
+    fn from(center: &'a Point) -> Area<'a> {
+        Area {
+            center,
+            around: [
+                center.top_left(), center.top_middle(), center.top_right(),
+                center.mid_left(),                      center.mid_right(),
+                center.bot_left(), center.bot_middle(), center.bot_right()
+            ]
+        }
     }
 }
 
@@ -216,15 +207,17 @@ impl Point {
 fn area_from_point() {
     let point = Point { x: 1, y: 1 };
     let area_expected = Area {
-        point: &point,
-        tl: Point { x: 0, y: 0 },
-        tm: Point { x: 1, y: 0 },
-        tr: Point { x: 2, y: 0 },
-        ml: Point { x: 0, y: 1 },
-        mr: Point { x: 2, y: 1 },
-        bl: Point { x: 0, y: 2 },
-        bm: Point { x: 1, y: 2 },
-        br: Point { x: 2, y: 2 },
+        center: &point,
+        around: [
+            Point { x: 0, y: 0 },
+            Point { x: 1, y: 0 },
+            Point { x: 2, y: 0 },
+            Point { x: 0, y: 1 },
+            Point { x: 2, y: 1 },
+            Point { x: 0, y: 2 },
+            Point { x: 1, y: 2 },
+            Point { x: 2, y: 2 },
+        ],
     };
     let area_from = Area::from(&point);
 
