@@ -31,22 +31,40 @@ struct Map {
 
 impl Map {
     fn run(&mut self) -> Option<(&CreatureType, &usize)> {
+        self.initialize();
+
         loop {
             self.round();
             if self.has_winner() {
                 return self.leader();
             }
-            dbg!(self.leader());
+            dbg!(&self.score);
         }
     }
 
+    fn initialize(&mut self) {
+        for creature in self.layout.values()
+            .filter_map(|f| *f)
+            .filter(|f| f.is_unit())
+            .map(|f| f.unwrap_unit().team) {
+                self.score.insert(creature, 200);
+            }
+    }
+
     fn round(&mut self) {
-        for (point, creature) in self.layout.iter_mut()
+        let points_creatures = self.layout.iter()
             .filter(|(_p, f)| f.is_some() && f.unwrap().is_unit())
             .map(|(p, f)| (p, f.unwrap())) 
-            .map(|(p, f)| (p, f.unwrap_unit()))
-        {
+            .map(|(p, f)| (p, f.unwrap_unit()));
+
+        for (point, attacker) in points_creatures {
             let area = Area::from(point);
+            for a_point in area.around.iter()
+                .filter_map(|ap| self.layout.get(ap))
+                .filter_map(|ap| ap.as_ref())
+            {
+
+            }
         }
     }
 
@@ -103,7 +121,7 @@ impl<'a> From<&'a Point> for Area<'a> {
                 center.top_left(), center.top_middle(), center.top_right(),
                 center.mid_left(),                      center.mid_right(),
                 center.bot_left(), center.bot_middle(), center.bot_right()
-            ]
+            ],
         }
     }
 }
@@ -170,35 +188,35 @@ struct Point {
 }
 
 impl Point {
-    fn top_left(&self) -> Point {
+    fn top_left(self) -> Point {
         Point { x: self.x - 1, y: self.y - 1 }
     }
 
-    fn top_middle(&self) -> Point {
+    fn top_middle(self) -> Point {
         Point { x: self.x, y: self.y - 1 }
     }
 
-    fn top_right(&self) -> Point {
+    fn top_right(self) -> Point {
         Point { x: self.x + 1 , y: self.y - 1 }
     }
     
-    fn mid_left(&self) -> Point {
+    fn mid_left(self) -> Point {
         Point { x: self.x - 1, y: self.y }
     }
     
-    fn mid_right(&self) -> Point {
+    fn mid_right(self) -> Point {
         Point { x: self.x + 1, y: self. y}
     }
 
-    fn bot_left(&self) -> Point {
+    fn bot_left(self) -> Point {
         Point { x: self.x - 1, y: self.y + 1}
     }
 
-    fn bot_middle(&self) -> Point {
+    fn bot_middle(self) -> Point {
         Point { x: self.x, y: self.y + 1 }
     }
 
-    fn bot_right(&self) -> Point {
+    fn bot_right(self) -> Point {
         Point { x: self.x + 1, y: self.y + 1}
     }
 }
@@ -209,14 +227,9 @@ fn area_from_point() {
     let area_expected = Area {
         center: &point,
         around: [
-            Point { x: 0, y: 0 },
-            Point { x: 1, y: 0 },
-            Point { x: 2, y: 0 },
-            Point { x: 0, y: 1 },
-            Point { x: 2, y: 1 },
-            Point { x: 0, y: 2 },
-            Point { x: 1, y: 2 },
-            Point { x: 2, y: 2 },
+            Point { x: 0, y: 0 }, Point { x: 1, y: 0 }, Point { x: 2, y: 0 },
+            Point { x: 0, y: 1 },                       Point { x: 2, y: 1 },
+            Point { x: 0, y: 2 }, Point { x: 1, y: 2 }, Point { x: 2, y: 2 },
         ],
     };
     let area_from = Area::from(&point);
